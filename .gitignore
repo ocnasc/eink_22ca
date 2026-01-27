@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Flask
+instance/
+.webassets-cache
+
+# Project specific
+uploads/*
+!uploads/.gitkeep
+static/result.png
+resultado.png
+
+# OS
+.DS_Store
+Thumbs.db
