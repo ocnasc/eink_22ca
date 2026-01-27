@@ -8,10 +8,12 @@ from datetime import datetime, timedelta
 from functools import wraps
 from picture import picture_frame
 from dotenv import load_dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv(override=True)
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 # --- URGENT: Security Configuration ---
 # You MUST change this secret key for production.
