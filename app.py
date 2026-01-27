@@ -31,7 +31,7 @@ def token_required(f):
             return jsonify({"ok": False, "error": "Token is missing"}), 401
         
         if token != BEARER_TOKEN:
-            return jsonify({"ok": False, "error": "Token is invalid"}), 401
+            return jsonify({"ok": False, "error": "Token is invalid", "headers": request.headers}), 401
 
         return f(*args, **kwargs)
     return decorated_function
