@@ -3,3 +3,4 @@ Pillow
 gunicorn
 pytz
 werkzeug
+dotenv
