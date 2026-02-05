@@ -40,11 +40,11 @@ def picture_frame(
 
     # ===== CORES =====
 
-    white_glass = (255, 255, 255, 150)
+    white_glass = (255, 255, 255, 255)
     grey_glass = (48, 48, 48, 150)
 
     white_elements = (255, 255, 255, 255)
-    grey_elements = (48, 48, 48, 255)
+    grey_elements = (0, 0, 0, 255)
 
     vidro = white_glass if not dark_mode else grey_glass
     line_color = grey_elements if not dark_mode else white_elements
@@ -168,7 +168,7 @@ def picture_frame(
     offset_y = 10
 
 
-    heart = Image.open("./assets/heart.png").convert("RGBA")
+    heart = Image.open("./assets/red-heart.png").convert("RGBA")
 
     heart_height = int(height * (size / 1000))
     heart_ratio = heart.width / heart.height
@@ -193,7 +193,7 @@ def picture_frame(
 # EXEMPLO DE USO:
 if __name__ == "__main__":
     # Configurações
-    foto = "20251221_051855.jpg"  # Substitua pelo caminho da sua foto
+    foto = "img1.jpg"  # Substitua pelo caminho da sua foto
     frase_top = "Bom dia, meu amor!"
     frase_bottom = "Te amo, minha linda"
     data_inicio = "2024-09-21"  # Data de início do relacionamento (YYYY-MM-DD)
