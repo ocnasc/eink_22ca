@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "interval_hours": 1,
+  "dark_mode": false,
+  "last_photo_id": null,
+  "last_message_id": null,
+  "next_run": null
+}

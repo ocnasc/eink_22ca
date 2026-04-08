@@ -1,91 +1,684 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Picture Frame</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="static\heart.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Picture Frame</title>
+  <link rel="icon" type="image/x-icon" href="/static/heart.ico">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222635;
+      --border: rgba(255,255,255,.08);
+      --border-focus: rgba(99,179,237,.5);
+      --text: #e2e8f0;
+      --text-muted: rgba(226,232,240,.45);
+      --accent: #667eea;
+      --accent2: #764ba2;
+      --danger: #f87171;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --radius: 14px;
+      --radius-sm: 9px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand { font-weight: 700; font-size: 1rem; letter-spacing: .02em; }
+    .nav-brand span { color: var(--accent); }
+    .btn-logout {
+      padding: .35rem .9rem;
+      background: rgba(248,113,113,.12);
+      border: 1px solid rgba(248,113,113,.25);
+      border-radius: var(--radius-sm);
+      color: var(--danger);
+      font-size: .8rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .btn-logout:hover { background: rgba(248,113,113,.22); }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: .25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .3rem;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: .55rem .5rem;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: .82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); background: rgba(255,255,255,.05); }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(102,126,234,.35);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      margin-bottom: .9rem;
+    }
+
+    /* ── Grid ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ── Form ── */
+    label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: .35rem;
+    }
+    input[type="text"], input[type="number"], input[type="datetime-local"], input[type="file"] {
+      width: 100%;
+      padding: .6rem .85rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: .88rem;
+      outline: none;
+      transition: border-color .2s;
+      margin-bottom: .8rem;
+    }
+    input:focus { border-color: var(--border-focus); }
+    input[type="file"] { cursor: pointer; }
+    input::placeholder { color: var(--text-muted); }
+
+    /* toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: .8rem;
+    }
+    .toggle-row input[type="checkbox"] {
+      width: 36px; height: 20px;
+      appearance: none; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 20px;
+      cursor: pointer; position: relative; transition: background .2s;
+      margin: 0; flex-shrink: 0;
+    }
+    .toggle-row input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+    .toggle-row input[type="checkbox"]::after {
+      content: ''; position: absolute;
+      width: 14px; height: 14px; background: #fff; border-radius: 50%;
+      top: 2px; left: 2px; transition: left .2s;
+    }
+    .toggle-row input[type="checkbox"]:checked::after { left: 18px; }
+    .toggle-row label { margin: 0; font-size: .85rem; color: var(--text); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .55rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: .83rem; font-weight: 600;
+      cursor: pointer; border: none;
+      transition: opacity .15s, transform .1s;
+      text-decoration: none;
+    }
+    .btn:hover { opacity: .88; }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+    .btn-success { background: linear-gradient(135deg, #059669, #34d399); color: #fff; }
+    .btn-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-danger { background: rgba(248,113,113,.15); border: 1px solid rgba(248,113,113,.3); color: var(--danger); }
+    .btn-warning { background: linear-gradient(135deg, #d97706, #fbbf24); color: #fff; }
+    .btn-sm { padding: .3rem .7rem; font-size: .75rem; }
+    .btn-full { width: 100%; justify-content: center; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+    /* ── Alert ── */
+    .alert {
+      padding: .8rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: .85rem;
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .alert-success { background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.25); color: #6ee7b7; }
+    .alert-danger  { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25); color: #fca5a5; }
+    .alert-close { margin-left: auto; background: none; border: none; color: inherit; cursor: pointer; font-size: 1rem; opacity: .6; }
+    .alert-close:hover { opacity: 1; }
+
+    /* ── Photo gallery ── */
+    .photo-grid { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .photo-item { position: relative; }
+    .photo-thumb {
+      width: 88px; height: 60px; object-fit: cover;
+      border-radius: 8px; cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color .2s, box-shadow .2s;
+      display: block;
+    }
+    .photo-thumb:hover { border-color: var(--accent); }
+    .photo-thumb.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(102,126,234,.3); }
+    .photo-del {
+      position: absolute; top: 2px; right: 2px;
+      background: rgba(0,0,0,.65); border: none;
+      border-radius: 50%; width: 18px; height: 18px;
+      color: #fff; font-size: .6rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .15s;
+    }
+    .photo-item:hover .photo-del { opacity: 1; }
+
+    /* ── Message pills ── */
+    .msg-pill {
+      display: inline-flex; flex-direction: column;
+      padding: .4rem .8rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer;
+      transition: border-color .2s, background .2s;
+      max-width: 180px;
+    }
+    .msg-pill:hover { border-color: var(--accent); background: rgba(102,126,234,.08); }
+    .msg-pill.selected { border-color: var(--accent); background: rgba(102,126,234,.15); }
+    .msg-pill .sup { font-size: .8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-pill .inf { font-size: .72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-pills { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .7rem; }
+
+    /* ── Preview ── */
+    .preview-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-height: 200px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .preview-box img { width: 100%; border-radius: var(--radius); display: block; }
+    .preview-placeholder { color: var(--text-muted); font-size: .85rem; text-align: center; padding: 2rem; }
+
+    /* ── Scheduler badge ── */
+    .badge {
+      display: inline-block;
+      padding: .2rem .65rem;
+      border-radius: 20px;
+      font-size: .72rem; font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .badge-on  { background: rgba(52,211,153,.15); border: 1px solid rgba(52,211,153,.3); color: #34d399; }
+    .badge-off { background: rgba(255,255,255,.06); border: 1px solid var(--border); color: var(--text-muted); }
+
+    /* ── Scheduler info ── */
+    .info-grid { display: grid; grid-template-columns: auto 1fr; gap: .35rem .9rem; }
+    .info-key { color: var(--text-muted); font-size: .8rem; }
+    .info-val { color: var(--text); font-size: .8rem; font-weight: 500; }
+
+    /* ── Message list ── */
+    .msg-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .65rem .9rem;
+      border-radius: 9px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      margin-bottom: .4rem;
+    }
+    .msg-row .texts .sup { font-weight: 600; font-size: .85rem; }
+    .msg-row .texts .inf { font-size: .78rem; color: var(--text-muted); margin-top: .1rem; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+    /* ── Empty state ── */
+    .empty { color: var(--text-muted); font-size: .82rem; padding: .5rem 0; }
+  </style>
 </head>
+<body>
 
-<body class="bg-light">
+<nav>
+  <div class="nav-brand">💖 Picture <span>Frame</span></div>
+  <a href="/logout" class="btn-logout">Sair</a>
+</nav>
 
-    <div class="container mt-5">
-        <h3 class="mb-4">Gerador de Imagem 💖</h3>
+<div class="container">
 
-        {% if message %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endif %}
+  {% if message %}
+  <div class="alert {% if 'Erro' in message or 'Por favor' in message %}alert-danger{% else %}alert-success{% endif %}">
+    <span>{% if 'Erro' in message or 'Por favor' in message %}⚠{% else %}✓{% endif %}</span>
+    <span>{{ message }}</span>
+    <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+  </div>
+  {% endif %}
 
-        <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
-            <!-- Campo oculto para manter o nome da foto entre requests -->
-            <input type="hidden" name="cached_foto" value="{{ cached_foto }}">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('gerar', this)">🎨 Gerar</button>
+    <button class="tab-btn" onclick="switchTab('album', this)">🖼 Fotos</button>
+    <button class="tab-btn" onclick="switchTab('mensagens', this)">💬 Mensagens</button>
+    <button class="tab-btn" onclick="switchTab('scheduler', this)">⏰ Scheduler</button>
+  </div>
 
-            <div class="mb-3">
-                <label class="form-label">Foto</label>
-                <input type="file" name="foto" class="form-control" {% if not cached_foto %}required{% endif %}>
-                {% if cached_foto %}
-                    <small class="text-muted">Foto atual: {{ cached_foto }} (envie outra para alterar)</small>
-                {% endif %}
-            </div>
+  <!-- ===== TAB GERAR ===== -->
+  <div id="tab-gerar" class="tab-panel active">
+    <div class="grid-2">
 
-            <div class="mb-3">
-                <label class="form-label">Mensagem principal</label>
-                <input type="text" name="frase_superior" maxlength="30" class="form-control" value="{{ frase_superior }}" required>
-            </div>
+      <!-- Formulário -->
+      <div>
+        <form method="POST" enctype="multipart/form-data" id="main-form">
+          <input type="hidden" name="cached_foto" value="{{ cached_foto }}" id="cached_foto_input">
+          <input type="hidden" name="album_photo_id" value="" id="album_photo_id_input">
 
-            <div class="mb-3">
-                <label class="form-label">Submensagem</label>
-                <input type="text" name="frase_inferior" maxlength="30" class="form-control" value="{{ frase_inferior }}" required>
-            </div>
-
-            <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" name="dark_mode" id="dark" {% if dark_mode %}checked{% endif %}>
-                <label class="form-check-label" for="dark">Dark mode</label>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="row align-items-end">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">📅 Agendamento (Opcional)</label>
-                    <input type="datetime-local" name="schedule_time" class="form-control"
-                        value="{{ schedule_time }}">
-                    <small class="text-muted">Deixe em branco para enviar agora.</small>
-                </div>
-
-                <div class="col-md-6 mb-3 d-flex gap-2 justify-content-end">
-                    <button type="submit" name="action" value="preview" class="btn btn-primary w-100">
-                        🎨 Generate Preview
-                    </button>
-                </div>
-            </div>
-
-            {% if image_url %}
-            <div class="mt-4 text-center">
-                <h5>{% if preview_mode %}Preview{% else %}Resultado Final{% endif %}</h5>
-                <img src="{{ image_url }}?{{ range(1000)|random }}" class="img-fluid rounded shadow">
-                
-                <div class="mt-3 d-flex justify-content-center gap-2">
-                    <button type="submit" name="action" value="schedule" class="btn btn-outline-primary">
-                        ⏱️ Confirmar Agendamento
-                    </button>
-                    <button type="submit" name="action" value="instant" class="btn btn-success">
-                        🚀 Enviar Agora
-                    </button>
-                    <a href="{{ image_url }}" download class="btn btn-outline-secondary">
-                        Baixar
-                    </a>
-                </div>
+          <!-- Foto -->
+          <div class="card">
+            <div class="card-title">Foto</div>
+            <div id="album-inline" class="photo-grid" style="margin-bottom:.7rem"></div>
+            <label>Ou envie nova foto</label>
+            <input type="file" name="foto" id="foto-upload" accept="image/*">
+            {% if cached_foto %}
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:-.4rem;margin-bottom:.5rem">
+              Atual: <strong style="color:var(--text)">{{ cached_foto }}</strong>
             </div>
             {% endif %}
+          </div>
+
+          <!-- Mensagem -->
+          <div class="card">
+            <div class="card-title">Mensagem</div>
+            <div id="messages-inline"></div>
+            <label>Mensagem principal</label>
+            <input type="text" name="frase_superior" id="input-sup" maxlength="30"
+                   value="{{ frase_superior }}" placeholder="max 30 caracteres">
+            <label>Submensagem</label>
+            <input type="text" name="frase_inferior" id="input-inf" maxlength="30"
+                   value="{{ frase_inferior }}" placeholder="max 30 caracteres">
+          </div>
+
+          <!-- Opções -->
+          <div class="card">
+            <div class="card-title">Opções</div>
+            <div class="toggle-row">
+              <input type="checkbox" name="dark_mode" id="dark_mode_check" {% if dark_mode %}checked{% endif %}>
+              <label for="dark_mode_check">Dark mode</label>
+            </div>
+            <label>Agendamento manual (opcional)</label>
+            <input type="datetime-local" name="schedule_time" value="{{ schedule_time }}">
+          </div>
+
+          <div class="btn-group">
+            <button type="submit" name="action" value="preview" class="btn btn-outline">🎨 Preview</button>
+            <button type="submit" name="action" value="instant" class="btn btn-success">🚀 Enviar</button>
+            <button type="submit" name="action" value="send_raw" class="btn btn-secondary">📷 Foto direta</button>
+            <button type="submit" name="action" value="schedule" class="btn btn-warning">⏱ Agendar</button>
+          </div>
         </form>
+      </div>
+
+      <!-- Preview -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            {% if preview_mode %}Preview{% elif image_url %}Resultado final{% else %}Visualização{% endif %}
+          </div>
+          <div class="preview-box">
+            {% if image_url %}
+            <img src="{{ image_url }}?r={{ cache_bust }}" alt="imagem gerada">
+            {% else %}
+            <div class="preview-placeholder">
+              <div style="font-size:2.5rem;margin-bottom:.5rem">🖼</div>
+              A imagem aparecerá aqui após gerar o preview ou enviar.
+            </div>
+            {% endif %}
+          </div>
+          {% if image_url %}
+          <div style="margin-top:.75rem">
+            <a href="{{ image_url }}" download class="btn btn-outline btn-sm">⬇ Baixar</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== TAB ÁLBUM ===== -->
+  <div id="tab-album" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Adicionar ao álbum</div>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <input type="file" id="album-upload-input" accept="image/*"
+               style="max-width:300px;margin-bottom:0">
+        <button class="btn btn-primary" onclick="albumUpload()">Adicionar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Fotos cadastradas</div>
+      <div id="album-gallery" class="photo-grid">
+        <span class="empty">Carregando...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB MENSAGENS ===== -->
+  <div id="tab-mensagens" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Adicionar par de mensagens</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem;align-items:end">
+        <div>
+          <label>Mensagem principal</label>
+          <input type="text" id="new-sup" maxlength="30" placeholder="max 30" style="margin-bottom:0">
+        </div>
+        <div>
+          <label>Submensagem</label>
+          <input type="text" id="new-inf" maxlength="30" placeholder="max 30" style="margin-bottom:0">
+        </div>
+        <button class="btn btn-primary" onclick="messageAdd()" style="height:34px;margin-top:1.1rem">+</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Mensagens cadastradas</div>
+      <div id="messages-list"><span class="empty">Carregando...</span></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB SCHEDULER ===== -->
+  <div id="tab-scheduler" class="tab-panel">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">
+        <div class="card-title" style="margin-bottom:0">Scheduler Automático</div>
+        <span id="sched-badge" class="badge badge-off">Inativo</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:160px auto 1fr;gap:1rem;align-items:end;margin-bottom:1rem">
+        <div>
+          <label>Intervalo (horas)</label>
+          <input type="number" id="sched-interval" min="1" value="1" style="margin-bottom:0">
+        </div>
+        <div class="toggle-row" style="margin-bottom:0;padding-top:1.4rem">
+          <input type="checkbox" id="sched-darkmode">
+          <label for="sched-darkmode">Dark mode</label>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-outline" onclick="schedulerSaveConfig()">💾 Salvar</button>
+        <button id="sched-toggle-btn" class="btn btn-success" onclick="schedulerToggle()">▶ Ativar</button>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <div class="card">
+      <div class="card-title">Status</div>
+      <div id="sched-info" class="info-grid"><span class="empty">Carregando...</span></div>
+    </div>
+  </div>
 
+</div><!-- /container -->
+
+<script>
+// ── Tab switcher ──────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'album') albumLoad();
+  else if (name === 'mensagens') messagesLoad();
+  else if (name === 'scheduler') schedulerLoad();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Álbum de Fotos ────────────────────────────────────────────────────────
+let albumData = [];
+
+async function albumLoad() {
+  const r = await fetch('/api/album');
+  const j = await r.json();
+  albumData = j.photos || [];
+  renderAlbumGallery();
+  renderAlbumInline();
+}
+
+function renderAlbumGallery() {
+  const el = document.getElementById('album-gallery');
+  if (!albumData.length) { el.innerHTML = '<span class="empty">Nenhuma foto cadastrada.</span>'; return; }
+  el.innerHTML = albumData.map(p => `
+    <div class="photo-item">
+      <img class="photo-thumb" src="/uploads/${esc(p.filename)}"
+           title="${esc(p.original_name)}" onerror="this.src='/static/heart.ico'" alt="">
+      <button class="photo-del" onclick="albumDelete('${p.id}')" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function renderAlbumInline() {
+  const el = document.getElementById('album-inline');
+  if (!albumData.length) { el.innerHTML = ''; return; }
+  el.innerHTML = albumData.map(p => `
+    <div class="photo-item">
+      <img class="photo-thumb" src="/uploads/${esc(p.filename)}"
+           title="${esc(p.original_name)}" onerror="this.src='/static/heart.ico'"
+           data-id="${p.id}" data-fn="${esc(p.filename)}"
+           onclick="albumSelect(this)" alt="">
+    </div>
+  `).join('');
+  // Re-marcar selecionado se já houver um cached
+  const cached = document.getElementById('album_photo_id_input').value;
+  if (cached) {
+    const img = document.querySelector(`#album-inline img[data-id="${cached}"]`);
+    if (img) img.classList.add('selected');
+  }
+}
+
+function albumSelect(img) {
+  document.querySelectorAll('#album-inline .photo-thumb').forEach(i => i.classList.remove('selected'));
+  img.classList.add('selected');
+  document.getElementById('album_photo_id_input').value = img.dataset.id;
+  document.getElementById('cached_foto_input').value = img.dataset.fn;
+  document.getElementById('foto-upload').value = '';
+}
+
+async function albumUpload() {
+  const input = document.getElementById('album-upload-input');
+  if (!input.files.length) { alert('Selecione uma foto.'); return; }
+  const fd = new FormData();
+  fd.append('foto', input.files[0]);
+  const r = await fetch('/api/album', { method: 'POST', body: fd });
+  const j = await r.json();
+  if (j.ok) { input.value = ''; albumLoad(); }
+  else alert('Erro: ' + j.error);
+}
+
+async function albumDelete(id) {
+  if (!confirm('Remover esta foto do álbum?')) return;
+  const r = await fetch(`/api/album/${id}`, { method: 'DELETE' });
+  const j = await r.json();
+  if (j.ok) albumLoad();
+  else alert('Erro: ' + j.error);
+}
+
+document.getElementById('foto-upload').addEventListener('change', function() {
+  if (this.files.length) {
+    document.getElementById('album_photo_id_input').value = '';
+    document.querySelectorAll('#album-inline .photo-thumb').forEach(i => i.classList.remove('selected'));
+  }
+});
+
+// ── Mensagens ─────────────────────────────────────────────────────────────
+let messagesData = [];
+
+async function messagesLoad() {
+  const r = await fetch('/api/messages');
+  const j = await r.json();
+  messagesData = j.messages || [];
+  renderMessagesList();
+  renderMessagesInline();
+}
+
+function renderMessagesList() {
+  const el = document.getElementById('messages-list');
+  if (!messagesData.length) { el.innerHTML = '<span class="empty">Nenhuma mensagem cadastrada.</span>'; return; }
+  el.innerHTML = messagesData.map(m => `
+    <div class="msg-row">
+      <div class="texts">
+        <div class="sup">${esc(m.frase_superior)}</div>
+        <div class="inf">${esc(m.frase_inferior) || '—'}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="messageDelete('${m.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function renderMessagesInline() {
+  const el = document.getElementById('messages-inline');
+  if (!messagesData.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="msg-pills">
+      ${messagesData.map(m => `
+        <div class="msg-pill" data-sup="${esc(m.frase_superior)}" data-inf="${esc(m.frase_inferior)}" onclick="messageSelect(this)">
+          <span class="sup">${esc(m.frase_superior)}</span>
+          <span class="inf">${esc(m.frase_inferior) || '&nbsp;'}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function messageSelect(el) {
+  document.querySelectorAll('.msg-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('input-sup').value = el.dataset.sup;
+  document.getElementById('input-inf').value = el.dataset.inf;
+}
+
+async function messageAdd() {
+  const sup = document.getElementById('new-sup').value.trim();
+  const inf = document.getElementById('new-inf').value.trim();
+  if (!sup) { alert('Mensagem principal é obrigatória.'); return; }
+  const r = await fetch('/api/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ frase_superior: sup, frase_inferior: inf })
+  });
+  const j = await r.json();
+  if (j.ok) { document.getElementById('new-sup').value = ''; document.getElementById('new-inf').value = ''; messagesLoad(); }
+  else alert('Erro: ' + j.error);
+}
+
+async function messageDelete(id) {
+  if (!confirm('Remover mensagem?')) return;
+  const r = await fetch(`/api/messages/${id}`, { method: 'DELETE' });
+  const j = await r.json();
+  if (j.ok) messagesLoad();
+  else alert('Erro: ' + j.error);
+}
+
+// ── Scheduler ─────────────────────────────────────────────────────────────
+async function schedulerLoad() {
+  const r = await fetch('/api/auto-scheduler/status');
+  const j = await r.json();
+  const cfg = j.config || {};
+  const on = !!cfg.enabled;
+
+  const badge = document.getElementById('sched-badge');
+  badge.textContent = on ? 'Ativo' : 'Inativo';
+  badge.className = 'badge ' + (on ? 'badge-on' : 'badge-off');
+
+  const btn = document.getElementById('sched-toggle-btn');
+  btn.textContent = on ? '⏹ Desativar' : '▶ Ativar';
+  btn.className = 'btn ' + (on ? 'btn-danger' : 'btn-success');
+
+  document.getElementById('sched-interval').value = cfg.interval_hours || 1;
+  document.getElementById('sched-darkmode').checked = !!cfg.dark_mode;
+
+  const info = document.getElementById('sched-info');
+  const next = cfg.next_run ? new Date(cfg.next_run).toLocaleString('pt-BR') : '—';
+  info.innerHTML = `
+    <span class="info-key">Próxima execução</span><span class="info-val">${next}</span>
+    <span class="info-key">Intervalo</span><span class="info-val">${cfg.interval_hours || 1}h</span>
+    <span class="info-key">Dark mode</span><span class="info-val">${cfg.dark_mode ? 'Sim' : 'Não'}</span>
+    <span class="info-key">Última foto</span><span class="info-val" style="font-size:.72rem;opacity:.7">${cfg.last_photo_id || '—'}</span>
+    <span class="info-key">Última mensagem</span><span class="info-val" style="font-size:.72rem;opacity:.7">${cfg.last_message_id || '—'}</span>
+  `;
+}
+
+async function schedulerToggle() {
+  const r = await fetch('/api/auto-scheduler/toggle', { method: 'POST' });
+  const j = await r.json();
+  if (j.ok) schedulerLoad();
+  else alert('Erro: ' + j.error);
+}
+
+async function schedulerSaveConfig() {
+  const interval = parseInt(document.getElementById('sched-interval').value, 10);
+  const dark = document.getElementById('sched-darkmode').checked;
+  const r = await fetch('/api/auto-scheduler/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ interval_hours: interval, dark_mode: dark })
+  });
+  const j = await r.json();
+  if (j.ok) schedulerLoad();
+  else alert('Erro: ' + j.error);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+albumLoad();
+messagesLoad();
+schedulerLoad();
+</script>
+</body>
 </html>

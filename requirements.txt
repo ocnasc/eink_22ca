@@ -1,6 +1,10 @@
-Flask
+fastapi
+uvicorn[standard]
+python-multipart
+jinja2
+itsdangerous
+starlette
 Pillow
-gunicorn
 pytz
+python-dotenv
 werkzeug
-dotenv
