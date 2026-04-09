@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "2ad7b6cc-ece4-4a65-bfc8-a9fd71012db4",
+    "frase_superior": "Bom dia meu amor",
+    "frase_inferior": "Eu te amo <3",
+    "created_at": "2026-04-09T09:18:08.705461-03:00"
+  },
+  {
+    "id": "d770d178-c798-4473-958c-264dbf8ad4bd",
+    "frase_superior": "Olaaa meu bem",
+    "frase_inferior": "Estou com sdds",
+    "created_at": "2026-04-09T09:18:22.016391-03:00"
+  },
+  {
+    "id": "25abda40-ed3c-4c4e-b2ba-0ef9f0a9f05b",
+    "frase_superior": "Eu te amo",
+    "frase_inferior": "mt mt mt mt",
+    "created_at": "2026-04-09T09:18:34.376672-03:00"
+  },
+  {
+    "id": "a84c93e9-2096-49f6-8b9b-82fa904c3cd3",
+    "frase_superior": "Oi minha 22ca",
+    "frase_inferior": "Eu te amo d+++",
+    "created_at": "2026-04-09T09:19:07.377755-03:00"
+  }
+]

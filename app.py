@@ -12,7 +12,13 @@ from fastapi import FastAPI, Request, Form, File, UploadFile, HTTPException, Dep
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+import starlette.formparsers as _formparsers
+
+# Aumenta limite de upload de partes multipart para 50 MB (padrão é 1 MB)
+_orig_multipart_init = _formparsers.MultiPartParser.__init__
+def _patched_multipart_init(self, *args, max_part_size: int = 50 * 1024 * 1024, **kwargs):
+    _orig_multipart_init(self, *args, max_part_size=max_part_size, **kwargs)
+_formparsers.MultiPartParser.__init__ = _patched_multipart_init
 from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -67,7 +73,8 @@ _init_json(MESSAGES_FILE, [])
 _init_json(SCHEDULE_FILE, [])
 _init_json(AUTO_SCHEDULER_FILE, {
     "enabled": False, "interval_hours": 1, "dark_mode": False,
-    "last_photo_id": None, "last_message_id": None, "next_run": None
+    "last_photo_id": None, "last_message_id": None, "next_run": None,
+    "cleanup_enabled": False, "cleanup_interval_hours": 24, "cleanup_next_run": None
 })
 
 def _read_json(path, default):
@@ -233,9 +240,29 @@ def _run_auto_scheduler():
     cfg["next_run"] = (now + timedelta(hours=int(cfg.get("interval_hours", 1)))).isoformat()
     _save_auto_cfg(cfg)
 
+def _cleanup_images():
+    """Remove todos os PNGs da pasta images, exceto o arquivo atual (latest.json)."""
+    latest = ""
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE) as f:
+                latest = json.load(f).get("arquivo", "")
+        except Exception:
+            pass
+    removed = 0
+    for fname in os.listdir(IMAGES_FOLDER):
+        if fname.endswith(".png") and fname != latest and fname != "preview.png":
+            try:
+                os.remove(os.path.join(IMAGES_FOLDER, fname))
+                removed += 1
+            except Exception as e:
+                print(f"[Cleanup] Erro ao remover {fname}: {e}")
+    print(f"[Cleanup] {removed} arquivo(s) removido(s) de {IMAGES_FOLDER}")
+
 def scheduler_worker():
     while True:
         try:
+            # --- Jobs manuais ---
             jobs = _read_json(SCHEDULE_FILE, [])
             if jobs:
                 now_str = get_now_gmt3().strftime("%Y-%m-%dT%H:%M")
@@ -256,9 +283,11 @@ def scheduler_worker():
                     _write_json(SCHEDULE_FILE, remaining)
 
             cfg = _get_auto_cfg()
+            now = get_now_gmt3()
+
+            # --- Auto scheduler ---
             if cfg.get("enabled"):
                 next_run_str = cfg.get("next_run")
-                now = get_now_gmt3()
                 should_run = not next_run_str
                 if not should_run:
                     try:
@@ -268,6 +297,25 @@ def scheduler_worker():
                         should_run = True
                 if should_run:
                     _run_auto_scheduler()
+                    cfg = _get_auto_cfg()  # recarrega após _run_auto_scheduler salvar
+
+            # --- Limpeza de imagens ---
+            if cfg.get("cleanup_enabled"):
+                cleanup_next_str = cfg.get("cleanup_next_run")
+                should_cleanup = not cleanup_next_str
+                if not should_cleanup:
+                    try:
+                        if now >= datetime.fromisoformat(cleanup_next_str):
+                            should_cleanup = True
+                    except Exception:
+                        should_cleanup = True
+                if should_cleanup:
+                    _cleanup_images()
+                    cfg["cleanup_next_run"] = (
+                        now + timedelta(hours=int(cfg.get("cleanup_interval_hours", 24)))
+                    ).isoformat()
+                    _save_auto_cfg(cfg)
+
         except Exception as e:
             print(f"[Scheduler Worker] Erro: {e}")
         time.sleep(30)
@@ -303,6 +351,8 @@ class MessageBody(BaseModel):
 class AutoSchedulerConfigBody(BaseModel):
     interval_hours: Optional[int] = None
     dark_mode: Optional[bool] = None
+    cleanup_enabled: Optional[bool] = None
+    cleanup_interval_hours: Optional[int] = None
 
 class SendRawBody(BaseModel):
     photo_id: str
@@ -503,6 +553,12 @@ async def api_auto_scheduler_config(body: AutoSchedulerConfigBody, request: Requ
         cfg["interval_hours"] = max(1, body.interval_hours)
     if body.dark_mode is not None:
         cfg["dark_mode"] = body.dark_mode
+    if body.cleanup_enabled is not None:
+        cfg["cleanup_enabled"] = body.cleanup_enabled
+        if body.cleanup_enabled and not cfg.get("cleanup_next_run"):
+            cfg["cleanup_next_run"] = get_now_gmt3().isoformat()
+    if body.cleanup_interval_hours is not None:
+        cfg["cleanup_interval_hours"] = max(1, body.cleanup_interval_hours)
     _save_auto_cfg(cfg)
     return {"ok": True, "config": cfg}
 
@@ -572,6 +628,29 @@ async def api_generate(
         return {"ok": True, "versao": metadata["versao"], "data": metadata}
     except Exception as e:
         raise HTTPException(500, str(e))
+
+# ---------------------------------------------------------------------------
+# Imagem atual para o frontend (sessão, sem bearer)
+# ---------------------------------------------------------------------------
+
+@app.get("/current-image")
+async def current_image(request: Request, _=Depends(require_login)):
+    if not os.path.exists(DATA_FILE):
+        raise HTTPException(404, "Nenhuma imagem disponível")
+    with open(DATA_FILE) as f:
+        data = json.load(f)
+    filepath = os.path.join(IMAGES_FOLDER, data["arquivo"])
+    if not os.path.exists(filepath):
+        raise HTTPException(404, "Arquivo não encontrado")
+    return FileResponse(filepath, media_type="image/png")
+
+@app.get("/current-status")
+async def current_status(request: Request, _=Depends(require_login)):
+    if not os.path.exists(DATA_FILE):
+        return {"disponivel": False}
+    with open(DATA_FILE) as f:
+        data = json.load(f)
+    return {"disponivel": True, **data}
 
 # ---------------------------------------------------------------------------
 # API — Status e Imagem (RF08 — inalteradas)

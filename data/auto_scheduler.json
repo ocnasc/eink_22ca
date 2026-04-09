@@ -1,8 +1,8 @@
 {
-  "enabled": false,
+  "enabled": true,
   "interval_hours": 1,
   "dark_mode": false,
-  "last_photo_id": null,
-  "last_message_id": null,
-  "next_run": null
+  "last_photo_id": "61904127-4fd0-41b4-a6ab-dcfb5da1f6ab",
+  "last_message_id": "2ad7b6cc-ece4-4a65-bfc8-a9fd71012db4",
+  "next_run": "2026-04-09T10:19:17.656458-03:00"
 }

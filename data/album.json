@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "id": "61904127-4fd0-41b4-a6ab-dcfb5da1f6ab",
+    "filename": "DSC00781.JPG",
+    "original_name": "DSC00781.JPG",
+    "path": "uploads/DSC00781.JPG",
+    "created_at": "2026-04-09T09:17:13.651836-03:00"
+  },
+  {
+    "id": "978a7a15-d353-4d89-8e2d-e995b8fd125a",
+    "filename": "DSC00777.JPG",
+    "original_name": "DSC00777.JPG",
+    "path": "uploads/DSC00777.JPG",
+    "created_at": "2026-04-09T09:17:21.615785-03:00"
+  },
+  {
+    "id": "03f03972-57d8-494e-a6a0-3bcb3a4a9c91",
+    "filename": "1000120490.jpg",
+    "original_name": "1000120490.jpg",
+    "path": "uploads/1000120490.jpg",
+    "created_at": "2026-04-09T09:17:31.092620-03:00"
+  },
+  {
+    "id": "44331a5a-ea03-47c3-b7b1-05b9ab44613d",
+    "filename": "1000120556.webp",
+    "original_name": "1000120556.webp",
+    "path": "uploads/1000120556.webp",
+    "created_at": "2026-04-09T09:17:40.261703-03:00"
+  },
+  {
+    "id": "a31577fc-2c97-4bed-8690-ff90dcd41bc9",
+    "filename": "DSC00780.JPG",
+    "original_name": "DSC00780.JPG",
+    "path": "uploads/DSC00780.JPG",
+    "created_at": "2026-04-09T09:17:54.449771-03:00"
+  }
+]

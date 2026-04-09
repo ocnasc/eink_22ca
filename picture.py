@@ -41,7 +41,7 @@ def picture_frame(
     # ===== CORES =====
 
     white_glass = (255, 255, 255, 255)
-    grey_glass = (48, 48, 48, 150)
+    grey_glass = (0, 0, 0, 200)
 
     white_elements = (255, 255, 255, 255)
     grey_elements = (0, 0, 0, 255)
@@ -109,12 +109,12 @@ def picture_frame(
     try:
         fonte_msg_grande = ImageFont.truetype(
             "fonts/abril-fatface/abril-fatface-latin-400-normal.ttf",
-            int(height * 0.075)
+            int(height * 0.08)
         )
         fonte_msg_pequena = ImageFont.truetype(
             "fonts/Italianno/Italianno-Regular.ttf",
             # "abril-fatface/abril-fatface-latin-400-normal.ttf",
-            int(height * 0.09)
+            int(height * 0.1)
             # int(height * 0.048)
         )
         fonte_dias = ImageFont.truetype(
@@ -140,7 +140,7 @@ def picture_frame(
 
     bbox = draw_text.textbbox((0, 0), frase_inferior, font=fonte_msg_pequena)
     x = (center_x - (bbox[2] - bbox[0])) // 2
-    y = overlay_top + int(overlay_height * 0.495)
+    y = overlay_top + int(overlay_height * 0.45)
     draw_text.text((x, y), frase_inferior, fill=text_color, font=fonte_msg_pequena)
 
     # ===== LADO DIREITO =====
@@ -193,9 +193,9 @@ def picture_frame(
 # EXEMPLO DE USO:
 if __name__ == "__main__":
     # Configurações
-    foto = "img1.jpg"  # Substitua pelo caminho da sua foto
-    frase_top = "Bom dia, meu amor!"
-    frase_bottom = "Te amo, minha linda"
+    foto = r"C:\Users\OtavioNascimento\Desktop\projeto_pessoal\new\eink_22ca\static\images\2026-04-08_15-20-09.png"  # Substitua pelo caminho da sua foto
+    frase_top = "Bom dia, meu amor"
+    frase_bottom = "dormiu top?"
     data_inicio = "2024-09-21"  # Data de início do relacionamento (YYYY-MM-DD)
     
     # Criar a imagem

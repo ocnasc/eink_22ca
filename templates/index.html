@@ -386,6 +386,21 @@
           </div>
           {% endif %}
         </div>
+
+        <!-- Imagem atual no dispositivo -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+            <div class="card-title" style="margin-bottom:0">Imagem atual no dispositivo</div>
+            <button class="btn btn-outline btn-sm" onclick="currentImageLoad()">↺ Atualizar</button>
+          </div>
+          <div class="preview-box" id="current-image-box">
+            <div class="preview-placeholder">
+              <div style="font-size:2rem;margin-bottom:.4rem">📡</div>
+              <span id="current-image-label">Carregando...</span>
+            </div>
+          </div>
+          <div id="current-image-meta" style="margin-top:.6rem;font-size:.75rem;color:var(--text-muted)"></div>
+        </div>
       </div>
 
     </div>
@@ -454,6 +469,30 @@
       <div class="btn-group">
         <button class="btn btn-outline" onclick="schedulerSaveConfig()">💾 Salvar</button>
         <button id="sched-toggle-btn" class="btn btn-success" onclick="schedulerToggle()">▶ Ativar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem">
+        <div class="card-title" style="margin-bottom:0">Limpeza automática de imagens</div>
+        <span id="cleanup-badge" class="badge badge-off">Inativa</span>
+      </div>
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:1rem">
+        Remove todos os arquivos da pasta <code style="color:var(--text);background:var(--surface2);padding:.1rem .4rem;border-radius:4px">static/images</code> periodicamente, mantendo apenas a imagem atual.
+      </p>
+      <div style="display:grid;grid-template-columns:160px auto 1fr;gap:1rem;align-items:end;margin-bottom:1rem">
+        <div>
+          <label>Intervalo (horas)</label>
+          <input type="number" id="cleanup-interval" min="1" value="24" style="margin-bottom:0">
+        </div>
+        <div class="toggle-row" style="margin-bottom:0;padding-top:1.4rem">
+          <input type="checkbox" id="cleanup-enabled" onchange="cleanupToggle(this)">
+          <label for="cleanup-enabled">Ativar limpeza</label>
+        </div>
+        <div></div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline" onclick="cleanupSaveConfig()">💾 Salvar</button>
       </div>
     </div>
 
@@ -644,12 +683,23 @@ async function schedulerLoad() {
   document.getElementById('sched-interval').value = cfg.interval_hours || 1;
   document.getElementById('sched-darkmode').checked = !!cfg.dark_mode;
 
+  // Limpeza
+  const cleanupOn = !!cfg.cleanup_enabled;
+  const cleanupBadge = document.getElementById('cleanup-badge');
+  cleanupBadge.textContent = cleanupOn ? 'Ativa' : 'Inativa';
+  cleanupBadge.className = 'badge ' + (cleanupOn ? 'badge-on' : 'badge-off');
+  document.getElementById('cleanup-enabled').checked = cleanupOn;
+  document.getElementById('cleanup-interval').value = cfg.cleanup_interval_hours || 24;
+
   const info = document.getElementById('sched-info');
   const next = cfg.next_run ? new Date(cfg.next_run).toLocaleString('pt-BR') : '—';
+  const nextCleanup = cfg.cleanup_next_run ? new Date(cfg.cleanup_next_run).toLocaleString('pt-BR') : '—';
   info.innerHTML = `
     <span class="info-key">Próxima execução</span><span class="info-val">${next}</span>
-    <span class="info-key">Intervalo</span><span class="info-val">${cfg.interval_hours || 1}h</span>
+    <span class="info-key">Intervalo scheduler</span><span class="info-val">${cfg.interval_hours || 1}h</span>
     <span class="info-key">Dark mode</span><span class="info-val">${cfg.dark_mode ? 'Sim' : 'Não'}</span>
+    <span class="info-key">Próxima limpeza</span><span class="info-val">${nextCleanup}</span>
+    <span class="info-key">Intervalo limpeza</span><span class="info-val">${cfg.cleanup_interval_hours || 24}h</span>
     <span class="info-key">Última foto</span><span class="info-val" style="font-size:.72rem;opacity:.7">${cfg.last_photo_id || '—'}</span>
     <span class="info-key">Última mensagem</span><span class="info-val" style="font-size:.72rem;opacity:.7">${cfg.last_message_id || '—'}</span>
   `;
@@ -675,10 +725,51 @@ async function schedulerSaveConfig() {
   else alert('Erro: ' + j.error);
 }
 
+function cleanupToggle(checkbox) {
+  // Salva imediatamente ao marcar/desmarcar
+  cleanupSaveConfig();
+}
+
+async function cleanupSaveConfig() {
+  const enabled = document.getElementById('cleanup-enabled').checked;
+  const interval = parseInt(document.getElementById('cleanup-interval').value, 10);
+  const r = await fetch('/api/auto-scheduler/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cleanup_enabled: enabled, cleanup_interval_hours: interval })
+  });
+  const j = await r.json();
+  if (j.ok) schedulerLoad();
+  else alert('Erro: ' + j.error);
+}
+
+// ── Imagem atual ──────────────────────────────────────────────────────────
+async function currentImageLoad() {
+  const box = document.getElementById('current-image-box');
+  const meta = document.getElementById('current-image-meta');
+  const label = document.getElementById('current-image-label');
+
+  try {
+    const r = await fetch('/current-status');
+    const j = await r.json();
+
+    if (!j.disponivel) {
+      label.textContent = 'Nenhuma imagem enviada ainda.';
+      return;
+    }
+
+    box.innerHTML = `<img src="/current-image?r=${Date.now()}" alt="imagem atual" style="width:100%;border-radius:var(--radius);display:block">`;
+    meta.textContent = `${j.versao} · ${j.dia} ${j.horario}`;
+  } catch (e) {
+    label.textContent = 'Erro ao carregar imagem.';
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────
 albumLoad();
 messagesLoad();
 schedulerLoad();
+currentImageLoad();
 </script>
 </body>
 </html>
